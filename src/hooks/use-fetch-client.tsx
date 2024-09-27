@@ -437,27 +437,29 @@ function updateUrlWithFilters({
   noPrefixQuery,
 }: IParamsProps) {
   const url = new URL(window.location.href);
-
-  // Atualiza ou adiciona os novos parâmetros
   Object.entries(data).forEach(([key, value]) => {
     const _key = mountKey({ componentId, noPrefixQuery }, key);
-    const _prop = mountProp(_key); // Usa o mountProp para converter o key para camelCase, se necessário
+    if (_key) url.searchParams.set(_key, value?.toString() || '');
+  });
+  // remove empty params
+  const searchParams = [] as { key: string; value: string }[];
+  url.searchParams.forEach((value, key) => {
+    searchParams.push({ key, value });
+  });
+  searchParams.forEach((item) => {
+    const [key, prop] = item.key.split('-');
+    const _prop = mountProp(prop || key);
 
-    if (_prop) {
-      if (value !== undefined && value !== null) {
-        // Se o valor é válido (não é null ou undefined), atualiza ou adiciona o parâmetro
-        url.searchParams.set(_prop, value.toString());
-      } else {
-        // Se o valor é vazio ou null/undefined, remove o parâmetro relacionado ao componente
-        url.searchParams.delete(_prop);
-      }
+    if (
+      !Object.keys(data).includes(_prop) ||
+      (componentId && isObjectEmpty(data[_prop]) && key === componentId) ||
+      (!componentId && isObjectEmpty(data[_prop]))
+    ) {
+      url.searchParams.delete(item.key);
     }
   });
-
-  // Atualiza o estado da URL sem recarregar a página
   window.history.replaceState({}, '', url);
 }
-
 
 // Busca os filtros da url
 export function getFiltersFromUrl({
