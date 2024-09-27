@@ -454,19 +454,19 @@ function updateUrlWithFilters({
     searchParams.push({ key, value });
   });
 
-  searchParams.forEach((item) => {
-    const [key, prop] = item.key.split('-');
-    const _prop = mountProp(prop || key);
+  // searchParams.forEach((item) => {
+  //   const [key, prop] = item.key.split('-');
+  //   const _prop = mountProp(prop || key);
 
-    // Remove apenas parâmetros do componente atual ou aqueles que estão vazios no 'data'
-    if (
-      (componentId && key === componentId && isObjectEmpty(data[_prop])) ||
-      (!componentId && isObjectEmpty(data[_prop])) ||
-      (!Object.keys(data).includes(_prop) && data[_prop] === undefined)
-    ) {
-      url.searchParams.delete(item.key);
-    }
-  });
+  //   // Remove apenas parâmetros do componente atual ou aqueles que estão vazios no 'data'
+  //   if (
+  //     (componentId && key === componentId && isObjectEmpty(data[_prop])) ||
+  //     (!componentId && isObjectEmpty(data[_prop])) ||
+  //     (!Object.keys(data).includes(_prop) && data[_prop] === undefined)
+  //   ) {
+  //     url.searchParams.delete(item.key);
+  //   }
+  // });
 
   // Atualiza o estado da URL sem recarregar a página
   window.history.replaceState({}, '', url);
