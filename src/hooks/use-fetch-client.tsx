@@ -426,9 +426,9 @@ function mountKey(props: IParamsProps, key: string) {
 }
 
 // Monta a propriedade do filtro
-// function mountProp(key: string) {
-//   return snakeToCamel(key);
-// }
+function mountProp(key: string) {
+  return snakeToCamel(key);
+}
 
 // Atualiza a url com os filtros
 function updateUrlWithFilters({
@@ -441,32 +441,18 @@ function updateUrlWithFilters({
   // Atualiza ou adiciona os novos parâmetros
   Object.entries(data).forEach(([key, value]) => {
     const _key = mountKey({ componentId, noPrefixQuery }, key);
-    if (_key) {
-      if (value) {
-        url.searchParams.set(_key, value?.toString() || '');
+    const _prop = mountProp(_key); // Usa o mountProp para converter o key para camelCase, se necessário
+
+    if (_prop) {
+      if (value !== undefined && value !== null) {
+        // Se o valor é válido (não é null ou undefined), atualiza ou adiciona o parâmetro
+        url.searchParams.set(_prop, value.toString());
+      } else {
+        // Se o valor é vazio ou null/undefined, remove o parâmetro relacionado ao componente
+        url.searchParams.delete(_prop);
       }
     }
   });
-
-  // Itera sobre os parâmetros existentes e só remove os que foram passados no 'data'
-  const searchParams = [] as { key: string; value: string }[];
-  url.searchParams.forEach((value, key) => {
-    searchParams.push({ key, value });
-  });
-
-  // searchParams.forEach((item) => {
-  //   const [key, prop] = item.key.split('-');
-  //   const _prop = mountProp(prop || key);
-
-  //   // Remove apenas parâmetros do componente atual ou aqueles que estão vazios no 'data'
-  //   if (
-  //     (componentId && key === componentId && isObjectEmpty(data[_prop])) ||
-  //     (!componentId && isObjectEmpty(data[_prop])) ||
-  //     (!Object.keys(data).includes(_prop) && data[_prop] === undefined)
-  //   ) {
-  //     url.searchParams.delete(item.key);
-  //   }
-  // });
 
   // Atualiza o estado da URL sem recarregar a página
   window.history.replaceState({}, '', url);
