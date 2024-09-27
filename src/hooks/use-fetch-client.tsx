@@ -437,29 +437,41 @@ function updateUrlWithFilters({
   noPrefixQuery,
 }: IParamsProps) {
   const url = new URL(window.location.href);
+
+  // Atualiza ou adiciona os novos parâmetros
   Object.entries(data).forEach(([key, value]) => {
     const _key = mountKey({ componentId, noPrefixQuery }, key);
-    if (_key) url.searchParams.set(_key, value?.toString() || '');
+    if (_key) {
+      if (value) {
+        url.searchParams.set(_key, value?.toString() || '');
+      }
+    }
   });
-  // remove empty params
+
+  // Itera sobre os parâmetros existentes e só remove os que foram passados no 'data'
   const searchParams = [] as { key: string; value: string }[];
   url.searchParams.forEach((value, key) => {
     searchParams.push({ key, value });
   });
+
   searchParams.forEach((item) => {
     const [key, prop] = item.key.split('-');
     const _prop = mountProp(prop || key);
 
+    // Remove apenas parâmetros do componente atual ou aqueles que estão vazios no 'data'
     if (
-      !Object.keys(data).includes(_prop) ||
-      (componentId && isObjectEmpty(data[_prop]) && key === componentId) ||
-      (!componentId && isObjectEmpty(data[_prop]))
+      (componentId && key === componentId && isObjectEmpty(data[_prop])) ||
+      (!componentId && isObjectEmpty(data[_prop])) ||
+      (!Object.keys(data).includes(_prop) && data[_prop] === undefined)
     ) {
       url.searchParams.delete(item.key);
     }
   });
+
+  // Atualiza o estado da URL sem recarregar a página
   window.history.replaceState({}, '', url);
 }
+
 
 // Busca os filtros da url
 export function getFiltersFromUrl({
