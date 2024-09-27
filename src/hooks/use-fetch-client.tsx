@@ -426,9 +426,9 @@ function mountKey(props: IParamsProps, key: string) {
 }
 
 // Monta a propriedade do filtro
-function mountProp(key: string) {
-  return snakeToCamel(key);
-}
+// function mountProp(key: string) {
+//   return snakeToCamel(key);
+// }
 
 // Atualiza a url com os filtros
 function updateUrlWithFilters({
