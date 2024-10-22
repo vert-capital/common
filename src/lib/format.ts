@@ -30,6 +30,12 @@ function dateDisplay(
   }
 }
 
+function toISOStringWithTimezone(date: Date) {
+	const offset = -3; // GMT-3 para Horário Padrão de Brasília
+	const localDate = new Date(date.getTime() - offset * 60 * 60 * 1000); // Ajuste o fuso horário
+	return localDate.toISOString().replace("Z", "-03:00"); // Substitui o sufixo de UTC
+}
+
 function dateOutput(
   date: string | Date | undefined,
   withTime?: boolean,
@@ -41,7 +47,7 @@ function dateOutput(
     }
 
     if (date instanceof Date) {
-      date = date.toISOString();
+      date = toISOStringWithTimezone(date);
     }
 
     if (!date || typeof date !== 'string') return '';
