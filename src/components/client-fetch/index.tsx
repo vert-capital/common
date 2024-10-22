@@ -1,7 +1,8 @@
-import { getFiltersFromUrl, useFetchClient } from '@/hooks';
-import { useEffect, useRef } from 'react';
-import { ClientFetchContext } from './client-fetch-context';
-import { IFetchParamsProps, Props } from './client-fetch-types';
+import { getFiltersFromUrl, useFetchClient } from "@/hooks";
+import { useEffect, useRef } from "react";
+import { ClientFetchContext } from "./client-fetch-context";
+import { IFetchParamsProps, Props } from "./client-fetch-types";
+import { isObjectEmpty } from "@/lib";
 
 export function ClientFetchProvider({
   componentId,
@@ -22,20 +23,22 @@ export function ClientFetchProvider({
     setQuery,
     fetchData,
   } = useFetchClient();
+  const onMounted = useRef(false);
   const urlParams = useRef<any | undefined>();
 
   const fetchDataGet = ({ query: _query, config }: IFetchParamsProps) => {
-    if (!endpointGet) throw new Error('endpointGet is required');
+    if (!endpointGet) throw new Error("endpointGet is required");
     const data = {
       ...initialQuery,
       ...(_query || query(componentId)),
     };
+    console.log(`fetchDataGet ${componentId} data: `, data);
 
     fetchData({
       componentId,
       resourcePath: endpointGet,
       data: data,
-      method: 'GET',
+      method: "GET",
       config: {
         ...config,
         noPrefixQuery: _config?.noPrefixQuery || config?.noPrefixQuery,
@@ -46,11 +49,11 @@ export function ClientFetchProvider({
   };
 
   const fetchDataPost = ({ body, config }: IFetchParamsProps) => {
-    if (!endpointPost) throw new Error('endpointPost is required');
+    if (!endpointPost) throw new Error("endpointPost is required");
     fetchData({
       componentId,
       resourcePath: endpointPost,
-      method: 'POST',
+      method: "POST",
       body,
       config,
     });
@@ -68,13 +71,26 @@ export function ClientFetchProvider({
   };
 
   useEffect(() => {
-    urlParams.current = getFiltersFromUrl({
-      componentId,
-      noPrefixQuery: _config?.noPrefixQuery,
-    });
-    if (endpointGet) {
-      fetchDataGet({});
+    if (onMounted.current) {
+      console.log(`useEffect query ${componentId}: `, query(componentId));
+      if (query(componentId) && !isObjectEmpty(query(componentId))) {
+        urlParams.current = getFiltersFromUrl({
+          componentId,
+          noPrefixQuery: _config?.noPrefixQuery,
+        });
+        console.log(
+          `useEffect $componentId} urlParams.current ${urlParams.current}`
+        );
+        if (endpointGet) {
+          fetchDataGet({});
+        }
+      }
+      else {
+        console.log(`useEffect query ${componentId} is empty`);
+        setQueryComponent({ componentId, ...initialQuery });
+      }
     }
+    onMounted.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query(componentId)]);
 
@@ -85,8 +101,8 @@ export function ClientFetchProvider({
         urlParams: urlParams.current,
         data: data(componentId),
         dataSubmit: dataSubmit(componentId),
-        error: error(componentId) || '',
-        errorSubmit: errorSubmit(componentId) || '',
+        error: error(componentId) || "",
+        errorSubmit: errorSubmit(componentId) || "",
         loading: loading(componentId) || false,
         loadingSubmit: loadingSubmit(componentId),
         setQuery: setQueryComponent,
