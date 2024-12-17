@@ -117,8 +117,8 @@ export const useFetchClient = create<IFetchClientProps>((set, get) => ({
     // limpar apenas os filtros que não estão na lista de excluidos
     const query = get().components[transformComponentId(componentId)]?.query || {};
     const newQuery = Object.keys(query).reduce((acc: any, key) => {
-      if (excluded?.includes(key)) {
-        acc[key] = query[key];
+      if (!excluded?.includes(key)) {
+       delete query[key];
       }
       return acc;
     }, {});
