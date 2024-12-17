@@ -1,6 +1,6 @@
-import { camelToSnake, handleError, isObjectEmpty, snakeToCamel } from '@/lib';
-import { queryStringToJSON, toQueryString } from '@/lib/url-transform';
-import { create } from 'zustand';
+import { camelToSnake, handleError, isObjectEmpty, snakeToCamel } from "@/lib";
+import { queryStringToJSON, toQueryString } from "@/lib/url-transform";
+import { create } from "zustand";
 
 export const loadingDelay = 400; // 400 ms
 
@@ -25,7 +25,7 @@ interface IFetchClientConfigProps {
 interface IFetchParamsProps extends IParamsProps {
   resourcePath: string;
   config?: IFetchClientConfigProps;
-  method?: 'GET' | 'POST';
+  method?: "GET" | "POST";
   body?: FormData;
 }
 
@@ -54,7 +54,7 @@ export const useFetchClient = create<IFetchClientProps>((set, get) => ({
   components: {},
   setQuery: ({ componentId, data }: IParamsProps) => {
     if (!data) data = {};
-    const query = typeof data === 'string' ? queryStringToJSON(data) : data;
+    const query = typeof data === "string" ? queryStringToJSON(data) : data;
     set((state) => ({
       components: {
         ...state.components,
@@ -86,7 +86,7 @@ export const useFetchClient = create<IFetchClientProps>((set, get) => ({
     noPrefixQuery,
   }: IParamsGroupsProps) => {
     if (!data) data = {};
-    const query = typeof data === 'string' ? queryStringToJSON(data) : data;
+    const query = typeof data === "string" ? queryStringToJSON(data) : data;
 
     componentIds.forEach((componentId) => {
       set((state) => ({
@@ -103,7 +103,7 @@ export const useFetchClient = create<IFetchClientProps>((set, get) => ({
           ?.noUrlParams
       ) {
         updateUrlWithFilters({
-          componentId: !noPrefixQuery ? transformComponentId(componentId) : '',
+          componentId: !noPrefixQuery ? transformComponentId(componentId) : "",
           data,
           noPrefixQuery: !noPrefixQuery
             ? get().components[transformComponentId(componentId)]?.config
@@ -113,13 +113,22 @@ export const useFetchClient = create<IFetchClientProps>((set, get) => ({
       }
     });
   },
-  clearQuery: (componentId: string) => {
+  clearQuery: (componentId: string, excluded: string[] = []) => {
+    // limpar apenas os filtros que não estão na lista de excluidos
+    const query = get().components[transformComponentId(componentId)]?.query || {};
+    const newQuery = Object.keys(query).reduce((acc: any, key) => {
+      if (excluded?.includes(key)) {
+        acc[key] = query[key];
+      }
+      return acc;
+    }, {});
+
     set((state) => ({
       components: {
         ...state.components,
         [transformComponentId(componentId)]: {
           ...state.components[transformComponentId(componentId)],
-          query: {},
+          query: newQuery,
         },
       },
     }));
@@ -235,8 +244,8 @@ export const useFetchClient = create<IFetchClientProps>((set, get) => ({
     method,
     body,
   }: IFetchParamsProps) => {
-    if (!componentId) throw new Error('componentId is required');
-    const isPost = method === 'POST';
+    if (!componentId) throw new Error("componentId is required");
+    const isPost = method === "POST";
     let isRequestPending = true;
 
     set((state) => ({
@@ -262,13 +271,13 @@ export const useFetchClient = create<IFetchClientProps>((set, get) => ({
                 [transformComponentId(componentId)]: {
                   ...state.components[transformComponentId(componentId)],
                   loading: true,
-                  error: '',
+                  error: "",
                 },
               },
             }));
           }
         },
-        config?.initialLoading ? 0 : loadingDelay,
+        config?.initialLoading ? 0 : loadingDelay
       );
 
       set((state) => ({
@@ -287,7 +296,7 @@ export const useFetchClient = create<IFetchClientProps>((set, get) => ({
           [transformComponentId(componentId)]: {
             ...state.components[transformComponentId(componentId)],
             loadingSubmit: true,
-            errorSubmit: '',
+            errorSubmit: "",
           },
         },
       }));
@@ -302,7 +311,7 @@ export const useFetchClient = create<IFetchClientProps>((set, get) => ({
       urlFilters && Object.keys(urlFilters).length ? urlFilters : undefined;
     // Define os parametros da busca considerando prioridades
     const query =
-      method === 'POST'
+      method === "POST"
         ? {}
         : hasUrlFilters
         ? {
@@ -329,22 +338,22 @@ export const useFetchClient = create<IFetchClientProps>((set, get) => ({
     //   },
     // }));
     try {
-      const response = await fetch(resourcePath + '?' + toQueryString(query), {
-        method: method || 'GET',
-        body: method === 'POST' ? body : undefined,
+      const response = await fetch(resourcePath + "?" + toQueryString(query), {
+        method: method || "GET",
+        body: method === "POST" ? body : undefined,
       });
 
-      const contentType = response.headers.get('content-type');
+      const contentType = response.headers.get("content-type");
 
       if (!response.ok) {
-        if (contentType && contentType.includes('application/json')) {
+        if (contentType && contentType.includes("application/json")) {
           throw await response.json();
         } else {
           throw await response.text();
         }
       }
       let result: any = {};
-      if (!contentType || !contentType.includes('application/json'))
+      if (!contentType || !contentType.includes("application/json"))
         result = await response.text();
       result = await response.json();
 
@@ -439,7 +448,7 @@ function updateUrlWithFilters({
   const url = new URL(window.location.href);
   Object.entries(data).forEach(([key, value]) => {
     const _key = mountKey({ componentId, noPrefixQuery }, key);
-    if (_key) url.searchParams.set(_key, value?.toString() || '');
+    if (_key) url.searchParams.set(_key, value?.toString() || "");
   });
   // remove empty params
   const searchParams = [] as { key: string; value: string }[];
@@ -447,7 +456,7 @@ function updateUrlWithFilters({
     searchParams.push({ key, value });
   });
   searchParams.forEach((item) => {
-    const [key, prop] = item.key.split('-');
+    const [key, prop] = item.key.split("-");
     const _prop = mountProp(prop || key);
 
     if (
@@ -458,7 +467,7 @@ function updateUrlWithFilters({
       url.searchParams.delete(item.key);
     }
   });
-  window.history.replaceState({}, '', url);
+  window.history.replaceState({}, "", url);
 }
 
 // Busca os filtros da url
@@ -474,12 +483,12 @@ export function getFiltersFromUrl({
     searchParams.push({ key, value });
   });
 
-  const listNotPrefix = searchParams.filter((item) => !item.key.includes('-'));
-  const listPrefix = searchParams.filter((item) => item.key.includes('-'));
+  const listNotPrefix = searchParams.filter((item) => !item.key.includes("-"));
+  const listPrefix = searchParams.filter((item) => item.key.includes("-"));
 
   if (!noPrefixQuery) {
     listPrefix.forEach((item) => {
-      const [id, filterKey] = item.key.split('-');
+      const [id, filterKey] = item.key.split("-");
       if (id && filterKey && transformComponentId(componentId) === id) {
         filters = {
           ...filters,
