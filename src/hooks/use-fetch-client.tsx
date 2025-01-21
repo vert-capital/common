@@ -33,7 +33,7 @@ interface IFetchClientProps {
   components: any;
   setQuery: (p: IParamsProps) => void;
   setQueryGroup: (p: IParamsGroupsProps) => void;
-  clearQuery: (componentId: string, excluded: [string]) => void;
+  clearQuery: (componentId: string, excluded: string[]) => void;
   clearQueryGroup: (componentIds: [string]) => void;
   clearAllQuery: () => void;
   setData: (p: IParamsProps) => void;

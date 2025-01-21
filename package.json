@@ -1,7 +1,7 @@
 {
   "name": "@vert-capital/common",
   "private": false,
-  "version": "1.0.14",
+  "version": "1.0.15",
   "target": "es6",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.es.js",
